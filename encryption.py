@@ -11,35 +11,29 @@ db = mysql.connector.connect(
     password="isc329",
     database="21F_spaolini"
 )
-# key = b'e\xaf\xc4n[\xcb\x8e\r\xae\x00\x11\xca\x91C\xf3\x8d'
+key = b'e\xaf\xc4n[\xcb\x8e\r\xae\x00\x11\xca\x91C\xf3\x8d'
 
-userin = (input("To get customer information, enter their ID number:"),)
+# userin = (input("To get customer information, enter their ID number:"))
 
-try:
-    if userin:
-        key = input("enter authentication key:").encode().decode('unicode_escape').encode("raw_unicode_escape")
 
-except UnicodeDecodeError:
-    key = input("incorrect key,please try again:").encode().decode('unicode_escape').encode("raw_unicode_escape")
+cursor = db.cursor(buffered=True)
+cursor2 = db.cursor()
 
-cursor = db.cursor()
+query = "select lastName from customers"
+# query = "select firstName from customers"
 
-# value = "select convert (bytes using utf8) from customers where custID=1029"
-
-query = "select firstName from customers where custID=%s"
-
-cursor.execute(query, userin)
+cursor.execute(query)
 
 # putting results into an array
-
-outputarr = [firstName for [firstName] in cursor.fetchall()]
+outputarr = [lastName for [lastName] in cursor.fetchall()]
+# outputarr = [firstName for [firstName] in cursor.fetchall()]
 encryptarr = []
 decryptarr = []
 
 
 def encryption():
     cipher = AES.new(key, AES.MODE_EAX)
-    data = x.encode()
+    data = x.encode('latin-1')
     nonce = cipher.nonce
     # print(nonce)
     tempcipher = cipher.encrypt(data)
@@ -56,17 +50,27 @@ def decryption():
     cipher = AES.new(key, AES.MODE_EAX, nonce=nonce_sep)
     plaintext = cipher.decrypt(ciphertext[16:])
     # decryptarr.append(plaintext.decode())
-    # print(type(plaintext))
+    print(plaintext.decode('latin-1'))
 
 
 def query_decrypt():
-    skim = bytes(x[2:])
+    skim = (x[2:])
     new_ciphertext = skim.decode('unicode_escape').encode("raw_unicode_escape")
+    # print(new_ciphertext)
     new_nonce = new_ciphertext[:16]
     cipher = AES.new(key, AES.MODE_EAX, nonce=new_nonce)
-    plaintext = cipher.decrypt(new_ciphertext[16:])
-    print(plaintext)
+    plaintext = cipher.decrypt(new_ciphertext[16:-1])
+    print(plaintext.decode('latin-1'))
 
 
 for x in outputarr:
     query_decrypt()
+    # cipher = AES.new(key, AES.MODE_EAX, nonce=nonce_sep)
+    # plaintext = cipher.decrypt(x[16:])
+    # print(plaintext.decode('latin-1'))
+
+# insert_cipher = "insert into customers (enc_firstName) values ('testing')"
+# cursor2.execute(insert_cipher)
+# print("executed")
+# for i in encryptarr:
+#     print("array element:", x)
